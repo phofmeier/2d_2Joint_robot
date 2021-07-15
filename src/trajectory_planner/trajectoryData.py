@@ -7,8 +7,10 @@ from trajectory_planner.model import TwoLinkModel
 
 
 class ReferenceTrajectory:
-    ''' This class hold the data for one Position trajectory and provides some basic functions
-    '''
+    """
+     This class hold the data for one Position reference trajectory  and provides some basic functions
+
+    """
 
     def __init__(self, canvas_width: int, canvas_height: int) -> None:
         """
@@ -28,6 +30,11 @@ class ReferenceTrajectory:
         self.periode_ms = 10
 
     def length(self):
+        """
+        length Length of the trajectory
+
+        :return: length
+        """
         return len(self.data)
 
     def addCanvasDataPoint(self, data: Dict) -> None:
@@ -43,7 +50,7 @@ class ReferenceTrajectory:
 
     def resample(self):
         """
-        resample resample the trajectory using linear interpolation
+        resample resample the trajectory using linear interpolation and set start timestamp to 0
         """
         if self.data.empty:
             return
@@ -110,6 +117,9 @@ class ReferenceTrajectory:
         return np.column_stack((x_canvas, y_canvas))
 
 class StateTrajectory:
+    """
+     This Class hold a planned trajectory of states an Controls
+    """
     def __init__(self, canvas_width: int, canvas_height: int) -> None:
         self.model = TwoLinkModel()
         self.data = DataFrame()
@@ -121,6 +131,12 @@ class StateTrajectory:
         self.canvas_scale = 500
 
     def SetSolution(self, ts, solution):
+        """
+        SetSolution Generate a Trajectory from a solution of a solver
+
+        :param ts: Timestamps
+        :param solution: solution of the solver
+        """
         w_opt = solution['x'].full().flatten()
         w_opt_size = self.model.state_size + self.model.control_size
         for i in range(self.model.state_size):
@@ -130,6 +146,12 @@ class StateTrajectory:
         self.data.insert(0, "ts" , np.append(ts, ts[-1]+ (ts[1]-ts[0])))
 
     def GetCanvasPositions(self):
+        """
+        GetCanvasPositions Get the Positions and Timestamps in the Canvas coordination system
+
+        :return: [ts, x_1, y_1, x_2, y_2] in canvas coordination system
+        :rtype: [type]
+        """
         pos_1 = self.model.calcPos1_np(self.data["x_0"].to_numpy())
         pos_2 = self.model.calcPos2_np(self.data["x_0"].to_numpy(), self.data["x_2"].to_numpy())
         pos_1_canvas = self.metricToCanvas(pos_1.transpose())
@@ -161,4 +183,3 @@ class StateTrajectory:
         clear Clear the trajectory
         """
         self.data = DataFrame()
-

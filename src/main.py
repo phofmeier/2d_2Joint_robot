@@ -1,11 +1,7 @@
-from time import sleep
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 from trajectory_planner.trajectoryData import ReferenceTrajectory, StateTrajectory
 from trajectory_planner.trajectoryPlanner import TrajectoryPlanner
-
-import copy
-
 
 port = 5000
 host = '127.0.0.1'
@@ -24,7 +20,7 @@ def index():
     input_trajectory.clear()
     return render_template('index.html', canvas_width=canvas_width, canvas_height=canvas_height)
 
-
+# SocketIO event Listener
 @socketio.on('draw_event')
 def draw_event_callback(argument):
     input_trajectory.addCanvasDataPoint(argument)
