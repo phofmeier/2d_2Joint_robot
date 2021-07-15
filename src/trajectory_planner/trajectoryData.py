@@ -1,12 +1,9 @@
-import copy
-from operator import ne
 from typing import Dict
 from numpy import uint64
 from pandas import DataFrame
-from pandas import to_datetime
 from scipy.interpolate import interp1d
 import numpy as np
-from model import TwoLinkModel
+from trajectory_planner.model import TwoLinkModel
 
 
 class ReferenceTrajectory:

@@ -1,8 +1,8 @@
 from time import sleep
 from flask import Flask, render_template
 from flask_socketio import SocketIO
-from trajectoryData import ReferenceTrajectory, StateTrajectory
-from trajectoryPlanner import TrajectoryPlanner
+from trajectory_planner.trajectoryData import ReferenceTrajectory, StateTrajectory
+from trajectory_planner.trajectoryPlanner import TrajectoryPlanner
 
 import copy
 

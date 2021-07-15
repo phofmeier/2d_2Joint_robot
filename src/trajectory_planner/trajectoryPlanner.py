@@ -1,7 +1,6 @@
-from trajectoryData import ReferenceTrajectory, StateTrajectory
-import copy
+from trajectory_planner.trajectoryData import ReferenceTrajectory
 import casadi as cas
-from model import TwoLinkModel
+from trajectory_planner.model import TwoLinkModel
 
 
 class TrajectoryPlanner:
