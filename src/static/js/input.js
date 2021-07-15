@@ -25,14 +25,14 @@ function init() {
     canvas_input.addEventListener("mouseup", function (e) {
         mouse_event('up', e)
     }, false);
-    // canvas.addEventListener("mouseout", function (e) {
-    //     mouse_event('out', e)
-    // }, false);
 
     socket.emit("reset_event");
     drawGrid();
 }
 
+/**
+ * Draw feasible area grid
+ */
 function drawGrid() {
     ctx_grid.fillStyle = "lightgrey";
     ctx_grid.fillRect(35, canvas_grid.height - 60, 500, 60);
@@ -47,6 +47,9 @@ function drawGrid() {
 
 }
 
+/**
+ * Draw a line in Canvas
+ */
 function drawLine() {
     ctx_input.beginPath();
     ctx_input.moveTo(prevX, prevY);
@@ -57,12 +60,15 @@ function drawLine() {
     ctx_input.closePath();
 }
 
+/**
+ * Callback if a mouse event occurs
+ * @param {*} event The pressed event
+ * @param {*} pos position of the mouse
+ */
 function mouse_event(event, pos) {
-
     var start = false;
     var x = pos.clientX - canvas_input.offsetLeft - canvas.offsetLeft;
     var y = pos.clientY - canvas_input.offsetTop - canvas.offsetTop;
-
 
     if (event == 'down') {
         flag_pressed = true;
@@ -87,16 +93,17 @@ function mouse_event(event, pos) {
         currY = y;
         drawLine()
     }
-
 }
 
+/**
+ * Reset the Canvas Form
+ */
 function reset_canvas() {
     ctx_input.clearRect(0, 0, canvas_input.width, canvas_input.height);
     first_pressed = true;
     flag_pressed = false;
     socket.emit("reset_event");
     draw_robot(100, 100, 200, 200);
-
 }
 
 init();

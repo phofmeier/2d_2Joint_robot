@@ -22,6 +22,14 @@ function init() {
     });
 }
 
+/**
+ * Draw Robotic Arm with joints at specific Positions
+ *
+ * @param {number} x_1
+ * @param {number} y_1
+ * @param {number} x_2
+ * @param {number} y_2
+ */
 function draw_robot(x_1, y_1, x_2, y_2) {
     ctx_animation.clearRect(0, 0, canvas_animation.width, canvas_animation.height);
 
@@ -67,6 +75,9 @@ function draw_robot(x_1, y_1, x_2, y_2) {
     ctx_animation.fill();
 }
 
+/**
+ * Start an animation
+ */
 function animation() {
     if (positions.length == 0) {
         return;
@@ -84,11 +95,17 @@ function animation() {
     }
 }
 
+/**
+ * Callback for Animation button
+ */
 function animate_robot() {
     socket.emit("start_animation");
     window.animation_index = 0;
 }
 
+/**
+ * Callback for Optimize button
+ */
 function optimize_trajectory() {
     button = document.getElementById("optimize_button");
     button.disabled = true;
