@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="{{ url_for('static',filename='socket.io/client-dist/socket.io.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
+    <title>Robot Animation</title>
+</head>
+
+<body>
+    <h1>Robot Animation</h1>
+    <button id="reset_button" onclick="reset_canvas()" type="button">Reset</button>
+    <button id="optimize_button" onclick="optimize_trajectory()" type="button">Optimize</button>
+    <button id="animate_button" onclick="animate_robot()" type="button">Animate</button>
+    <div id="canvas" style="position: relative;">
+        <canvas id="CanvasGrid" width={{canvas_width}} height={{canvas_height}}
+        style="position: absolute; left: 0px; top: 0px; z-index: 0;"></canvas>
+        <canvas id="CanvasAnimation" width={{canvas_width}} height={{canvas_height}}
+            style="position: absolute; left: 0px; top: 0px; z-index: 1;"></canvas>
+        <canvas id="CanvasInput" width={{canvas_width}} height={{canvas_height}}
+            style="border:2px solid;position: absolute; left: 0px; top: 0px; z-index: 2;"></canvas>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/input.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/animate_robot.js') }}"></script>
+    </div>
+
+</body>
+
+</html>
