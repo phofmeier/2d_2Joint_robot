@@ -96,7 +96,7 @@ function mouse_event(event, pos) {
 }
 
 /**
- * Reset the Canvas Form
+ * Callback for Reset button
  */
 function reset_canvas() {
     ctx_input.clearRect(0, 0, canvas_input.width, canvas_input.height);
