@@ -48,8 +48,8 @@ class TwoLinkModel:
         :param x: state
         :return: Position [x, y]
         """
-        x_1 = self.l1 * cas.sin(x[0])
-        y_1 = self.l1 * cas.cos(x[0])
+        x_1 = self.l1 * cas.cos(x[0])
+        y_1 = self.l1 * cas.sin(x[0])
         return cas.vertcat(x_1, y_1)
 
     def calcPos1_np(self, alpha_1):
@@ -59,8 +59,8 @@ class TwoLinkModel:
         :param alpha_1: First angle in rad
         :return: position [x, y]
         """
-        x_1 = self.l1 * np.sin(alpha_1)
-        y_1 = self.l1 * np.cos(alpha_1)
+        x_1 = self.l1 * np.cos(alpha_1)
+        y_1 = self.l1 * np.sin(alpha_1)
         return np.array([x_1, y_1])
 
     def calcPos2(self, x):
@@ -71,8 +71,8 @@ class TwoLinkModel:
         :return: Position [x, y]
         """
         p_1 = self.calcPos1(x)
-        x_2 = p_1[0] + self.l2 * cas.sin(x[0] + x[2])
-        y_2 = p_1[1] + self.l2 * cas.cos(x[0] + x[2])
+        x_2 = p_1[0] + self.l2 * cas.cos(x[0] + x[2])
+        y_2 = p_1[1] + self.l2 * cas.sin(x[0] + x[2])
         return cas.vertcat(x_2, y_2)
 
     def calcPos2_np(self, alpha_1, alpha_2):
@@ -84,8 +84,8 @@ class TwoLinkModel:
         :return: Position [x, y]
         """
         p_1 = self.calcPos1_np(alpha_1)
-        x_2 = p_1[0] + self.l2 * np.sin(alpha_1 + alpha_2)
-        y_2 = p_1[1] + self.l2 * np.cos(alpha_1 + alpha_2)
+        x_2 = p_1[0] + self.l2 * np.cos(alpha_1 + alpha_2)
+        y_2 = p_1[1] + self.l2 * np.sin(alpha_1 + alpha_2)
         return np.array([x_2, y_2])
 
     def ode(self, x, u):
