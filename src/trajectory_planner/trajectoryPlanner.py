@@ -47,16 +47,16 @@ class TrajectoryPlanner:
 
         # Initial conditions
         # TODO(peter): make initial state changeable
-        Xk = cas.MX.sym('X0', model.state_size)
+        Xk = cas.SX.sym('X0', model.state_size)
         w += [Xk]
-        lbw += model.state_lb
-        ubw += model.state_ub
+        lbw += [0] * model.state_size
+        ubw += [0] * model.state_size
         w0 += [0] * model.state_size
 
         # Generate NLP for each step
         for k in range(self.reference_trajectory.length()):
             # Controls
-            Uk = cas.MX.sym('U_' + str(k), model.control_size)
+            Uk = cas.SX.sym('U_' + str(k), model.control_size)
             w += [Uk]
             lbw += [-model.max_control] * model.control_size
             ubw += [model.max_control] * model.control_size
@@ -64,7 +64,7 @@ class TrajectoryPlanner:
 
             # New State
             Xk_end = model.discreteFun(Xk, Uk, step_size)
-            Xk = cas.MX.sym('X_' + str(k+1), model.state_size)
+            Xk = cas.SX.sym('X_' + str(k+1), model.state_size)
             w += [Xk]
             lbw += model.state_lb
             ubw += model.state_ub
