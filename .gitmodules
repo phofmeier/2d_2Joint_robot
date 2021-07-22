@@ -1,3 +1,3 @@
-[submodule "src/static/socket.io"]
-	path = src/static/socket.io
+[submodule "src/robot_animation/static/socket.io"]
+	path = src/robot_animation/static/socket.io
 	url = https://github.com/socketio/socket.io.git

@@ -103,7 +103,7 @@ function reset_canvas() {
     first_pressed = true;
     flag_pressed = false;
     socket.emit("reset_event");
-    draw_robot(100, 100, 200, 200);
+    draw_robot(35 + 250, canvas_animation.height - 60, 35 + 250 * 2, canvas_animation.height - 60);
 }
 
 init();

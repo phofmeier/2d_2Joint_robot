@@ -9,7 +9,7 @@ function init() {
     socket = io.connect();
     canvas_animation = document.getElementById("CanvasAnimation");
     ctx_animation = canvas_animation.getContext("2d");
-    draw_robot(100, 100, 200, 200);
+    draw_robot(35 + 250, canvas_animation.height - 60, 35 + 250 * 2, canvas_animation.height - 60);
 
     socket.on('new_animation_value', (positions_input) => {
         window.positions = positions_input;

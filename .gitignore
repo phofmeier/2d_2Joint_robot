@@ -3,3 +3,6 @@ src/trajectory_planner/__pycache__/*
 src/trajectory_planner.egg-info/*
 tests/__pycache__/*
 trajectory_planner.egg-info/*
+src/robot_animation/__pycache__/*
+src/robot_animation/static/socket.io/.*
+src/robot_animation.egg-info/*

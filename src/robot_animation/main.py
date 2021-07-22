@@ -44,6 +44,9 @@ def optimize_trajectory_callback():
     output_trajectory.SetSolution(input_trajectory.getMetricDataArray()[:, 0], solution)
     socketio.emit("optimization_done")
 
+def main():
+    socketio.run(app, port=port, host=host, debug=True)
 
 if __name__ == "__main__":
-    socketio.run(app, port=port, host=host, debug=True)
+    main()
+
