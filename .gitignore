@@ -1,2 +1,5 @@
 src/__pycache__/*
 src/trajectory_planner/__pycache__/*
+src/trajectory_planner.egg-info/*
+tests/__pycache__/*
+trajectory_planner.egg-info/*

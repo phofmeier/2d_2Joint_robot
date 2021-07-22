@@ -34,6 +34,7 @@ class TwoLinkModel:
         self.l2 = 0.5  # Length of second arm [m]
         self.state_size = 4
         self.control_size = 2
+        self.initial_state = [0, 0, 0, 0]
 
         # Constraints
         self.max_control = 10
