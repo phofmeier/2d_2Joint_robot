@@ -14,6 +14,7 @@ class Environment:
         self.currentModelState = self.model.initial_state
         self.currentStep = 0
         self.envState = self.getCurrentEnvState()
+        self.state_size = len(self.envState)
         action_space = np.linspace(-self.model.max_control,
                                    self.model.max_control, self.actionDiscreteSpace).tolist()
         self.actions = list(itertools.product(*[action_space] * self.model.control_size))
@@ -24,6 +25,7 @@ class Environment:
         self.currentStep = 0
         self.done = False
         self.envState = self.getCurrentEnvState()
+        return self.envState
 
     def step(self, action_index):
         current_env_state = self.envState

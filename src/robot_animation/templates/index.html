@@ -13,6 +13,7 @@
     <button id="reset_button" onclick="reset_canvas()" type="button">Reset</button>
     <button id="optimize_button" onclick="optimize_trajectory()" type="button">Optimize</button>
     <button id="animate_button" onclick="animate_robot()" type="button">Animate</button>
+    <button id="learn_button" onclick="start_learning()" type="button">Learn</button>
     <div id="canvas" style="position: relative;">
         <canvas id="CanvasGrid" width={{canvas_width}} height={{canvas_height}}
         style="position: absolute; left: 0px; top: 0px; z-index: 0;"></canvas>
@@ -22,6 +23,7 @@
             style="border:2px solid;position: absolute; left: 0px; top: 0px; z-index: 2;"></canvas>
         <script type="text/javascript" src="{{ url_for('static', filename='js/input.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/animate_robot.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/learner.js') }}"></script>
     </div>
 
 </body>

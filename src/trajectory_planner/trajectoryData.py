@@ -116,13 +116,15 @@ class ReferenceTrajectory:
         y_canvas = self.canvas_zero_y - (pos[:, 1] * self.canvas_scale)
         return np.column_stack((x_canvas, y_canvas))
 
+
 class StateTrajectory:
     """
      This Class hold a planned trajectory of states an Controls
     """
+
     def __init__(self, canvas_width: int, canvas_height: int) -> None:
         self.model = TwoLinkModel()
-        self.data = DataFrame()
+        self.data = DataFrame(columns=['ts', 'x_0', 'x_1', 'x_2', 'x_3', 'u_0', 'u_1'])
 
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
@@ -140,10 +142,15 @@ class StateTrajectory:
         w_opt = solution['x'].full().flatten()
         w_opt_size = self.model.state_size + self.model.control_size
         for i in range(self.model.state_size):
-            self.data.insert(i,"x_"+str(i), w_opt[i::w_opt_size])
+            self.data.insert(i, "x_"+str(i), w_opt[i::w_opt_size])
         for i in range(self.model.control_size):
-            self.data.insert(i+self.model.state_size, "u_"+str(i), np.append(w_opt[i+self.model.state_size::w_opt_size],np.nan))
-        self.data.insert(0, "ts" , np.append(ts, ts[-1]+ (ts[1]-ts[0])))
+            self.data.insert(i+self.model.state_size, "u_"+str(i),
+                             np.append(w_opt[i+self.model.state_size::w_opt_size], np.nan))
+        self.data.insert(0, "ts", np.append(ts, ts[-1] + (ts[1]-ts[0])))
+
+    def AppendState(self, x, u, ts):
+        self.data = self.data.append(
+            {'ts': ts, 'x_0': x[0], 'x_1': x[1], 'x_2': x[2], 'x_3': x[3], 'u_0': u[0], 'u_1': u[1]}, ignore_index=True)
 
     def GetCanvasPositions(self):
         """
@@ -159,10 +166,10 @@ class StateTrajectory:
 
         canvas_data = DataFrame()
         canvas_data.insert(0, "ts", self.data["ts"])
-        canvas_data.insert(1, "x_1", pos_1_canvas[:,0])
-        canvas_data.insert(2, "y_1", pos_1_canvas[:,1])
-        canvas_data.insert(3, "x_2", pos_2_canvas[:,0])
-        canvas_data.insert(4, "y_2", pos_2_canvas[:,1])
+        canvas_data.insert(1, "x_1", pos_1_canvas[:, 0])
+        canvas_data.insert(2, "y_1", pos_1_canvas[:, 1])
+        canvas_data.insert(3, "x_2", pos_2_canvas[:, 0])
+        canvas_data.insert(4, "y_2", pos_2_canvas[:, 1])
         return canvas_data.to_dict(orient="records")
 
     def metricToCanvas(self, pos):
