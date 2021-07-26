@@ -150,7 +150,7 @@ class StateTrajectory:
 
     def AppendState(self, x, u, ts):
         self.data = self.data.append(
-            [ts, x[0], x[1], x[2], x[3], u[0], u[1]], ignore_index=True)
+            [[ts, x[0], x[1], x[2], x[3], u[0], u[1]]], ignore_index=True)
 
     def GetCanvasPositions(self):
         """
