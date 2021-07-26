@@ -4,6 +4,7 @@ from trajectory_planner.trajectoryData import ReferenceTrajectory, StateTrajecto
 from trajectory_planner.trajectoryPlanner import TrajectoryPlanner
 from trajectory_planner.environment import Environment
 from trajectory_planner.deep_q_learning import DeepQLearning
+from multiprocessing import Process, Queue
 
 port = 5000
 host = '127.0.0.1'
@@ -15,6 +16,7 @@ canvas_height = 400
 
 input_trajectory = ReferenceTrajectory(canvas_width, canvas_height)
 output_trajectory = StateTrajectory(canvas_width, canvas_height)
+q = Queue()
 
 
 @app.route('/')
@@ -32,8 +34,13 @@ def reset_callback():
     input_trajectory.clear()
     output_trajectory.clear()
 
+
 @socketio.on('start_animation')
 def animation_callback():
+    global output_trajectory
+    if not q.empty():
+        output_trajectory = q.get(block=False)
+
     socketio.emit("new_animation_value", output_trajectory.GetCanvasPositions())
 
 @socketio.on('optimize_trajectory')
@@ -48,15 +55,22 @@ def optimize_trajectory_callback():
 
 @socketio.on("start_learning")
 def start_learning_callback():
-    global output_trajectory
+    global q
+
+    p = Process(target=learn, args=(q,))
+    p.start()
+
+
+def learn(q):
     input_trajectory.resample()
     reference = input_trajectory.getMetricDataArray()[:,1:]
     env = Environment(reference)
     learner = DeepQLearning(env)
 
-    for i in range(100):
-        output_trajectory, reward =  learner.runEpisode(canvas_width, canvas_height)
+    for i in range(1000):
+        out_trajectory, reward =  learner.runEpisode(canvas_width, canvas_height)
         print("Episode:", i, "Reward:", reward)
+        q.put(out_trajectory)
 
 def main():
     socketio.run(app, port=port, host=host, debug=True)

@@ -124,7 +124,7 @@ class StateTrajectory:
 
     def __init__(self, canvas_width: int, canvas_height: int) -> None:
         self.model = TwoLinkModel()
-        self.data = DataFrame(columns=['ts', 'x_0', 'x_1', 'x_2', 'x_3', 'u_0', 'u_1'])
+        self.data = DataFrame()
 
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
@@ -150,7 +150,7 @@ class StateTrajectory:
 
     def AppendState(self, x, u, ts):
         self.data = self.data.append(
-            {'ts': ts, 'x_0': x[0], 'x_1': x[1], 'x_2': x[2], 'x_3': x[3], 'u_0': u[0], 'u_1': u[1]}, ignore_index=True)
+            [ts, x[0], x[1], x[2], x[3], u[0], u[1]], ignore_index=True)
 
     def GetCanvasPositions(self):
         """

@@ -9,10 +9,10 @@ class DeepQLearning:
 
     def __init__(self, environment) -> None:
         self.env = environment
-        self.learning_rate = 0.01
-        self.discount_factor = 0.618
+        self.learning_rate = 0.0001
+        self.discount_factor = 0.4
         self.N_hidden_layer = 2
-        self.layer_size = 24
+        self.layer_size = 32
         self.q_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
         self.replay_memory = deque(maxlen=100_000)
 
@@ -58,8 +58,8 @@ class DeepQLearning:
         next_states = np.array([mem[3] for mem in mini_batch])
         next_qs_list = self.q_model.predict(next_states)
 
-        States = []
-        Rewards = []
+        States = [[0]*self.env.state_size] * batch_size
+        Rewards = [[0]*self.env.action_size] * batch_size
         for index, (state, action, reward, next_state, done) in enumerate(mini_batch):
             if not done:
                 max_future_q = reward + self.discount_factor * np.max(next_qs_list[index])
@@ -67,10 +67,10 @@ class DeepQLearning:
                 max_future_q = reward
 
             current_qs = current_qs_list[index]
-            current_qs[action] = max_future_q
+            current_qs[action] = (1 - 0.01)* current_qs[action] + 0.01 * max_future_q
 
-            States.append(state)
-            Rewards.append(current_qs)
+            States[index] = state
+            Rewards[index] = current_qs
         self.q_model.fit(np.array(States), np.array(Rewards), batch_size=batch_size, verbose=0, shuffle=True)
 
 

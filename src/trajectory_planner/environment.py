@@ -27,10 +27,27 @@ class Environment:
         self.envState = self.getCurrentEnvState()
         return self.envState
 
+    def calculateNewState(self, action_index):
+        new_state = self.model.discreteFun(self.currentModelState, self.actions[action_index], self.time_step).full().flatten()
+        if new_state[0] < self.model.state_lb[0]:
+            new_state[0] = 0
+            new_state[1] = 0
+        elif new_state[0] > self.model.state_ub[0]:
+            new_state[0] = self.model.state_ub[0]
+            new_state[1] = 0
+
+        if new_state[2] < self.model.state_lb[2]:
+            new_state[2] = self.model.state_lb[2]
+            new_state[3] = 0
+        elif new_state[2] > self.model.state_ub[2]:
+            new_state[2] = self.model.state_ub[2]
+            new_state[3] = 0
+        return new_state
+
+
     def step(self, action_index):
         current_env_state = self.envState
-        current_model_state = self.currentModelState
-        new_model_state = self.model.discreteFun(current_model_state, self.actions[action_index], self.time_step).full().flatten()
+        new_model_state = self.calculateNewState(action_index)
         reward = self.reward_function(self.reference[self.currentStep], new_model_state)
         self.currentModelState = new_model_state
         self.currentStep += 1
