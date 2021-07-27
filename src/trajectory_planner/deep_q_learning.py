@@ -7,14 +7,15 @@ import random
 
 class DeepQLearning:
 
-    def __init__(self, environment) -> None:
+    def __init__(self, environment, learning_rate = 0.001, discount_factor = 0.4, N_hidden_layer = 2, layer_size = 32, eps_scheduler_rate = 0.1) -> None:
         self.env = environment
-        self.learning_rate = 0.0001
-        self.discount_factor = 0.4
-        self.N_hidden_layer = 2
-        self.layer_size = 32
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.N_hidden_layer = N_hidden_layer
+        self.layer_size = layer_size
+        self.eps_scheduler_rate = eps_scheduler_rate
         self.q_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
-        self.replay_memory = deque(maxlen=100_000)
+        self.replay_memory = deque(maxlen=50_000)
 
         self.episode_nr = 0
 
@@ -44,7 +45,7 @@ class DeepQLearning:
         return np.argmax(q_values)
 
     def eps_scheduler(self):
-        return 1/(0.1 * self.episode_nr + 1)
+        return 1/(self.eps_scheduler_rate * self.episode_nr + 1)
 
     def train(self, batch_size = 32):
         if len(self.replay_memory) < batch_size:
@@ -67,7 +68,7 @@ class DeepQLearning:
                 max_future_q = reward
 
             current_qs = current_qs_list[index]
-            current_qs[action] = (1 - 0.01)* current_qs[action] + 0.01 * max_future_q
+            current_qs[action] =  max_future_q
 
             States[index] = state
             Rewards[index] = current_qs
@@ -81,6 +82,7 @@ class DeepQLearning:
         current_state = self.env.reset()
         done = False
         ts = 0
+        steps = 0
 
         while not done:
             action = self.eps_greedy(self.eps_scheduler(), current_state)
@@ -89,10 +91,13 @@ class DeepQLearning:
             self.replay_memory.append(next_step)
             current_state = next_step[3]
             total_training_rewards += next_step[2]
-
-            self.train()
-
             done = next_step[4]
+
+            if (steps % 10) or done :
+                self.train()
+
+
             ts += self.env.time_step
+            steps += 1
         self.episode_nr += 1
         return trajectory_data, total_training_rewards

@@ -124,7 +124,7 @@ class StateTrajectory:
 
     def __init__(self, canvas_width: int, canvas_height: int) -> None:
         self.model = TwoLinkModel()
-        self.data = DataFrame()
+        self.data = DataFrame(columns=['ts', 'x_0', 'x_1', 'x_2', 'x_3', 'u_0', 'u_1'])
 
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
@@ -139,6 +139,7 @@ class StateTrajectory:
         :param ts: Timestamps
         :param solution: solution of the solver
         """
+        self.data = DataFrame()
         w_opt = solution['x'].full().flatten()
         w_opt_size = self.model.state_size + self.model.control_size
         for i in range(self.model.state_size):
@@ -149,8 +150,9 @@ class StateTrajectory:
         self.data.insert(0, "ts", np.append(ts, ts[-1] + (ts[1]-ts[0])))
 
     def AppendState(self, x, u, ts):
-        self.data = self.data.append(
-            [[ts, x[0], x[1], x[2], x[3], u[0], u[1]]], ignore_index=True)
+        df = DataFrame([[ts, x[0], x[1], x[2], x[3], u[0], u[1]]],columns=['ts', 'x_0', 'x_1', 'x_2', 'x_3', 'u_0', 'u_1'] )
+        self.data = self.data.append(df, ignore_index=True)
+
 
     def GetCanvasPositions(self):
         """

@@ -16,7 +16,7 @@ canvas_height = 400
 
 input_trajectory = ReferenceTrajectory(canvas_width, canvas_height)
 output_trajectory = StateTrajectory(canvas_width, canvas_height)
-q = Queue()
+q = Queue(maxsize=20)
 
 
 @app.route('/')
@@ -25,9 +25,12 @@ def index():
     return render_template('index.html', canvas_width=canvas_width, canvas_height=canvas_height)
 
 # SocketIO event Listener
+
+
 @socketio.on('draw_event')
 def draw_event_callback(argument):
     input_trajectory.addCanvasDataPoint(argument)
+
 
 @socketio.on('reset_event')
 def reset_callback():
@@ -43,6 +46,7 @@ def animation_callback():
 
     socketio.emit("new_animation_value", output_trajectory.GetCanvasPositions())
 
+
 @socketio.on('optimize_trajectory')
 def optimize_trajectory_callback():
     global output_trajectory
@@ -52,6 +56,7 @@ def optimize_trajectory_callback():
     output_trajectory = StateTrajectory(canvas_width, canvas_height)
     output_trajectory.SetSolution(input_trajectory.getMetricDataArray()[:, 0], solution)
     socketio.emit("optimization_done")
+
 
 @socketio.on("start_learning")
 def start_learning_callback():
@@ -63,18 +68,20 @@ def start_learning_callback():
 
 def learn(q):
     input_trajectory.resample()
-    reference = input_trajectory.getMetricDataArray()[:,1:]
+    reference = input_trajectory.getMetricDataArray()[:, 1:]
     env = Environment(reference)
-    learner = DeepQLearning(env)
+    learner = DeepQLearning(env, learning_rate=0.001, discount_factor=0.7,
+                            N_hidden_layer=4, layer_size=64, eps_scheduler_rate=0.1)
 
     for i in range(1000):
-        out_trajectory, reward =  learner.runEpisode(canvas_width, canvas_height)
+        out_trajectory, reward = learner.runEpisode(canvas_width, canvas_height)
         print("Episode:", i, "Reward:", reward)
         q.put(out_trajectory)
+
 
 def main():
     socketio.run(app, port=port, host=host, debug=True)
 
+
 if __name__ == "__main__":
     main()
-
