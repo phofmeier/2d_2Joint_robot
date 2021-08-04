@@ -33,11 +33,13 @@ class DeepQLearning:
         self.layer_size = layer_size
         self.eps_scheduler_rate = eps_scheduler_rate
         self.q_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
+        self.q_target_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
         self.replay_memory = deque(maxlen=50_000)
 
         self.episode_nr = 0
 
-    def generate_q_model(self, N_hidden_layer=1, layer_size=24):
+    def generate_q_model(self, N_hidden_layer=1, layer_size=24,
+                         initializer=tf.keras.initializers.HeUniform()):
         """
         generate_q_model Generate the Neural Network approximating the Q function
 
@@ -47,18 +49,18 @@ class DeepQLearning:
         :type layer_size: int, optional
         :return: Neural Network Model
         """
-        init = tf.keras.initializers.HeUniform()
         model = tf.keras.Sequential()
         # Input
         model.add(tf.keras.layers.InputLayer(input_shape=(self.env.state_size,)))
         # Hidden Layer
         for i in range(N_hidden_layer):
-            model.add(tf.keras.layers.Dense(layer_size, activation='relu', kernel_initializer=init))
+            model.add(tf.keras.layers.Dense(
+                layer_size, activation='relu', kernel_initializer=initializer))
         # Output
         model.add(tf.keras.layers.Dense(self.env.action_size,
-                  activation='linear', kernel_initializer=init))
+                  activation='linear', kernel_initializer=initializer))
         model.compile(loss=tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(
-        learning_rate=self.learning_rate), metrics=['accuracy'])
+            learning_rate=self.learning_rate), metrics=['accuracy'])
         return model
 
     def eps_greedy(self, eps, state):
@@ -71,15 +73,15 @@ class DeepQLearning:
         :return: index of the action
         :rtype: int
         """
-        random_number = np.random.rand()
-        if random_number < eps:
+
+        if np.random.rand() < eps:
             # Exploration
             return np.random.randint(0, self.env.action_size)
 
         # Exploitation
         q_values = self.q_model.predict(state.reshape((1, self.env.state_size)))
-        print(q_values)
-        return np.argmax(q_values)
+        greedy_action_index = np.argmax(q_values)
+        return greedy_action_index
 
     def eps_scheduler(self):
         """
@@ -88,7 +90,7 @@ class DeepQLearning:
         :return: epsilon value
         :rtype: float, [0 ... 1]
         """
-        return 1/(self.eps_scheduler_rate * self.episode_nr + 1)
+        return 1/(self.eps_scheduler_rate * self.episode_nr + 1) + 0.01
 
     def train(self, batch_size = 32):
         """
@@ -99,29 +101,18 @@ class DeepQLearning:
         """
         if len(self.replay_memory) < batch_size:
             batch_size = len(self.replay_memory)
-        mini_batch = random.sample(self.replay_memory, batch_size - 1)
-        mini_batch.append(self.replay_memory[0])
-
+        mini_batch = random.sample(self.replay_memory, batch_size)
 
         current_states = np.array([mem[0] for mem in mini_batch])
         current_qs_list = self.q_model.predict(current_states)
         next_states = np.array([mem[3] for mem in mini_batch])
-        next_qs_list = self.q_model.predict(next_states)
+        next_qs_list = self.q_target_model.predict(next_states)
 
-        States = [[0]*self.env.state_size] * batch_size
-        Rewards = [[0]*self.env.action_size] * batch_size
         for index, (state, action, reward, next_state, done) in enumerate(mini_batch):
-            if not done:
-                max_future_q = reward + self.discount_factor * np.max(next_qs_list[index])
-            else:
-                max_future_q = reward
+            max_future_q = reward + self.discount_factor * np.max(next_qs_list[index]) * (1 - done)
+            current_qs_list[index][action] =  max_future_q
 
-            current_qs = current_qs_list[index]
-            current_qs[action] =  max_future_q
-
-            States[index] = state
-            Rewards[index] = current_qs
-        self.q_model.fit(np.array(States), np.array(Rewards), batch_size=batch_size, verbose=0, shuffle=True)
+        self.q_model.fit(current_states, current_qs_list, batch_size=batch_size, verbose=0, shuffle=True)
 
 
 
@@ -151,8 +142,11 @@ class DeepQLearning:
             total_training_rewards += next_step[2]
             done = next_step[4]
 
-            if (steps % 10) or done :
+            if (not (steps % 5)) or done :
                 self.train()
+
+            if (not(steps % 20)) or done :
+                self.q_target_model.set_weights(self.q_model.get_weights())
 
             ts += self.env.time_step
             steps += 1

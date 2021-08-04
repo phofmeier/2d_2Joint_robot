@@ -62,7 +62,7 @@ def optimize_trajectory_callback():
 def start_learning_callback():
     global q
 
-    p = Process(target=learn, args=(q,))
+    p = Process(target=learn, args=(q,), daemon=True)
     p.start()
 
 
@@ -70,12 +70,14 @@ def learn(q):
     input_trajectory.resample()
     reference = input_trajectory.getMetricDataArray()[:, 1:]
     env = Environment(reference)
-    learner = DeepQLearning(env, learning_rate=0.001, discount_factor=0.95,
-                            N_hidden_layer=3, layer_size=64, eps_scheduler_rate=0.1)
+    learner = DeepQLearning(env, learning_rate=0.001, discount_factor=0.99,
+                            N_hidden_layer=3, layer_size=64, eps_scheduler_rate=0.01)
 
     for i in range(1000):
         out_trajectory, reward = learner.runEpisode(canvas_width, canvas_height)
         print("Episode:", i, "Reward:", reward)
+        if q.full():
+            q.get()
         q.put(out_trajectory)
 
 
