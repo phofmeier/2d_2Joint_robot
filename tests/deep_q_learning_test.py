@@ -28,10 +28,21 @@ def test_run_episode():
     reference = [[1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [
         1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]]
     env = Environment(reference)
-    learner = DeepQLearning(env)
+    learner = DeepQLearning(env, eps_scheduler_rate=20)
 
-    for i in range(50):
+    for i in range(2):
         learner.runEpisode(600,400)
 
     assert False
+
+
+# from trajectory_planner.environment import Environment
+# from trajectory_planner.deep_q_learning import DeepQLearning
+# reference = [[1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [
+#     1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]]
+# env = Environment(reference)
+# learner = DeepQLearning(env)
+
+# for i in range(10):
+#     learner.runEpisode(600, 400)
 

@@ -10,7 +10,7 @@ class DeepQLearning:
      Deep Q Learning Algorithm implementation
     """
 
-    def __init__(self, environment, learning_rate = 0.001, discount_factor = 0.4, N_hidden_layer = 2, layer_size = 32, eps_scheduler_rate = 0.1) -> None:
+    def __init__(self, environment, learning_rate = 0.00025, discount_factor = 0.4, N_hidden_layer = 2, layer_size = 32, eps_scheduler_rate = 0.1, batch_size = 32) -> None:
         """
         __init__ Initialize algorithm
 
@@ -31,15 +31,19 @@ class DeepQLearning:
         self.discount_factor = discount_factor
         self.N_hidden_layer = N_hidden_layer
         self.layer_size = layer_size
+        self.batch_size = batch_size
         self.eps_scheduler_rate = eps_scheduler_rate
         self.q_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
         self.q_target_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
-        self.replay_memory = deque(maxlen=50_000)
+        self.replay_memory = deque(maxlen=100_000)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        self.loss_function = tf.keras.losses.Huber()
 
         self.episode_nr = 0
+        self.accumulated_steps = 0
 
     def generate_q_model(self, N_hidden_layer=1, layer_size=24,
-                         initializer=tf.keras.initializers.HeUniform()):
+                         initializer=tf.keras.initializers.Zeros()):
         """
         generate_q_model Generate the Neural Network approximating the Q function
 
@@ -59,8 +63,6 @@ class DeepQLearning:
         # Output
         model.add(tf.keras.layers.Dense(self.env.action_size,
                   activation='linear', kernel_initializer=initializer))
-        model.compile(loss=tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(
-            learning_rate=self.learning_rate), metrics=['accuracy'])
         return model
 
     def eps_greedy(self, eps, state):
@@ -90,7 +92,11 @@ class DeepQLearning:
         :return: epsilon value
         :rtype: float, [0 ... 1]
         """
-        return 1/(self.eps_scheduler_rate * self.episode_nr + 1) + 0.01
+        #return 1/(self.eps_scheduler_rate * self.episode_nr + 1) + 0.01
+        initial_p = 1.0
+        final_p = 0.02
+        fraction = min(float(self.episode_nr) / self.eps_scheduler_rate, 1.0)
+        return initial_p + fraction * (final_p - initial_p)
 
     def train(self, batch_size = 32):
         """
@@ -104,15 +110,29 @@ class DeepQLearning:
         mini_batch = random.sample(self.replay_memory, batch_size)
 
         current_states = np.array([mem[0] for mem in mini_batch])
-        current_qs_list = self.q_model.predict(current_states)
         next_states = np.array([mem[3] for mem in mini_batch])
         next_qs_list = self.q_target_model.predict(next_states)
+        rewards = np.array([mem[2] for mem in mini_batch])
+        actions = np.array([mem[1] for mem in mini_batch])
+        dones = tf.convert_to_tensor([float(mem[4]) for mem in mini_batch])
 
-        for index, (state, action, reward, next_state, done) in enumerate(mini_batch):
-            max_future_q = reward + self.discount_factor * np.max(next_qs_list[index]) * (1 - done)
-            current_qs_list[index][action] =  max_future_q
+        updated_q_values = rewards + self.discount_factor * tf.reduce_max(next_qs_list, axis=1) * (1 - dones)
+        masks = tf.one_hot(actions, self.env.action_size)
 
-        self.q_model.fit(current_states, current_qs_list, batch_size=batch_size, verbose=0, shuffle=True)
+        with tf.GradientTape() as tape:
+            # Train the model on the states and updated Q-values
+            q_values = self.q_model(current_states)
+
+            # Apply the masks to the Q-values to get the Q-value for action taken
+            q_action = tf.reduce_sum(tf.multiply(q_values, masks), axis=1)
+            # Calculate loss between new Q-value and old Q-value
+            loss = self.loss_function(updated_q_values, q_action)
+
+            # Backpropagation
+            grads = tape.gradient(loss, self.q_model.trainable_variables)
+            self.optimizer.apply_gradients(zip(grads, self.q_model.trainable_variables))
+
+
 
 
 
@@ -142,13 +162,14 @@ class DeepQLearning:
             total_training_rewards += next_step[2]
             done = next_step[4]
 
-            if (not (steps % 5)) or done :
-                self.train()
+            if not (self.accumulated_steps % 5):
+                self.train(self.batch_size)
 
-            if (not(steps % 20)) or done :
+            if not(self.accumulated_steps % 200) or done :
                 self.q_target_model.set_weights(self.q_model.get_weights())
 
             ts += self.env.time_step
             steps += 1
+            self.accumulated_steps += 1
         self.episode_nr += 1
         return trajectory_data, total_training_rewards

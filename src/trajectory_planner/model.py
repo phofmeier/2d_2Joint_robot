@@ -37,7 +37,7 @@ class TwoLinkModel:
         self.initial_state = [0, 0, 0, 0]
 
         # Constraints
-        self.max_control = 1
+        self.max_control = 3.0
         self.state_lb = [0, -cas.inf, -3.1, -cas.inf]
         self.state_ub = [np.pi/2, cas.inf, 3.1, cas.inf]
 

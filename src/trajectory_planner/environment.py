@@ -18,7 +18,7 @@ class Environment:
         """
         self.done = False
         self.time_step = 10 * 1e-3
-        self.actionDiscreteSpace = 3
+        self.actionDiscreteSpace = 5
         self.model = model
         self.reference = reference
         self.currentModelState = self.model.initial_state
