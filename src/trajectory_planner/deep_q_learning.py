@@ -165,7 +165,7 @@ class DeepQLearning:
             if not (self.accumulated_steps % 5):
                 self.train(self.batch_size)
 
-            if not(self.accumulated_steps % 200) or done :
+            if not(self.accumulated_steps % 200):
                 self.q_target_model.set_weights(self.q_model.get_weights())
 
             ts += self.env.time_step

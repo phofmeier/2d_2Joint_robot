@@ -5,11 +5,13 @@
     <meta charset="UTF-8">
     <script type="text/javascript" src="{{ url_for('static',filename='socket.io/client-dist/socket.io.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.3.0.min.js"></script>
     <title>Robot Animation</title>
 </head>
 
 <body>
     <h1>Robot Animation</h1>
+    <div>
     <button id="reset_button" onclick="reset_canvas()" type="button">Reset</button>
     <button id="optimize_button" onclick="optimize_trajectory()" type="button">Optimize</button>
     <button id="animate_button" onclick="animate_robot()" type="button">Animate</button>
@@ -23,8 +25,15 @@
             style="border:2px solid;position: absolute; left: 0px; top: 0px; z-index: 2;"></canvas>
         <script type="text/javascript" src="{{ url_for('static', filename='js/input.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/animate_robot.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/learner.js') }}"></script>
     </div>
+    <div id="reward_plot" style="width:{{canvas_width}}; height:{{canvas_height}}; position: relative;top:500px">
+    </div>
+    <input id=step_slider type="range" min="0" max="0" value="0", style="position: relative;top:500px;width: 1100px;" onchange="SliderChanged(this.value);"></input>
+    <output type="text" id="slider_value" value="0" style="position: relative;top:500px"></output>
+    <button id="play_step" onclick="animate_k()" style="position: relative;top:500px" type="button">Play</button>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/learner.js') }}"></script>
+</div>
+
 
 </body>
 

@@ -17,6 +17,8 @@ canvas_height = 400
 input_trajectory = ReferenceTrajectory(canvas_width, canvas_height)
 output_trajectory = StateTrajectory(canvas_width, canvas_height)
 q = Queue(maxsize=20)
+learned_trajectories = []
+
 
 
 @app.route('/')
@@ -25,6 +27,16 @@ def index():
     return render_template('index.html', canvas_width=canvas_width, canvas_height=canvas_height)
 
 # SocketIO event Listener
+
+@socketio.on("timer")
+def timer_callback():
+    global output_trajectory, q, learned_trajectories
+    while not q.empty():
+        value = q.get(block=False)
+        output_trajectory = value[0]
+        learned_trajectories.append(value)
+        socketio.emit("new_learned_reward", [value[2], -value[1]])
+
 
 
 @socketio.on('draw_event')
@@ -37,12 +49,12 @@ def reset_callback():
     input_trajectory.clear()
     output_trajectory.clear()
 
+@socketio.on("start_animation_index")
+def animation_k_callback(index):
+    socketio.emit("new_animation_value", learned_trajectories[int(index["index"])][0].GetCanvasPositions())
 
 @socketio.on('start_animation')
 def animation_callback():
-    global output_trajectory
-    if not q.empty():
-        output_trajectory = q.get(block=False)
 
     socketio.emit("new_animation_value", output_trajectory.GetCanvasPositions())
 
@@ -78,7 +90,7 @@ def learn(q):
         print("Episode:", i, "Reward:", reward)
         if q.full():
             q.get()
-        q.put(out_trajectory)
+        q.put([out_trajectory, reward, i])
 
 
 def main():

@@ -76,7 +76,7 @@ class TrajectoryPlanner:
 
             # Cost Function
             J = J + (cas.dot(reference[k, 1:] - model.calcPos2(Xk),
-                     reference[k, 1:] - model.calcPos2(Xk))) + 0.000001 * cas.dot(Uk, Uk)
+                     reference[k, 1:] - model.calcPos2(Xk))) + 1e-6 * cas.dot(Uk, Uk)
 
         # Create the Solver
         prob = {'f': J, 'x': cas.vertcat(*w), 'g': cas.vertcat(*g)}

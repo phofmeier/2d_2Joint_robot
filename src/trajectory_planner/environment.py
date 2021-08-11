@@ -76,7 +76,7 @@ class Environment:
         """
         current_env_state = self.envState
         new_model_state = self.calculateNewState(action_index)
-        reward = self.reward_function(self.reference[self.currentStep], new_model_state)
+        reward = self.reward_function(self.reference[self.currentStep], new_model_state, self.actions[action_index])
         self.currentModelState = new_model_state
         self.currentStep += 1
         self.done = self.currentStep >= len(self.reference)
@@ -85,7 +85,7 @@ class Environment:
 
         return current_env_state, action_index, reward, new_env_state, self.done
 
-    def reward_function(self, reference, state):
+    def reward_function(self, reference, state, action):
         """
         reward_function Reward Function
 
@@ -95,7 +95,7 @@ class Environment:
         """
         pos_state = self.model.calcPos2_np(state[0], state[2])
         diff = reference - pos_state.flatten()
-        return -np.dot(diff, diff)
+        return -np.dot(diff, diff) - 1e-6 * np.dot(action, action)
 
     def getCurrentEnvState(self):
         """
