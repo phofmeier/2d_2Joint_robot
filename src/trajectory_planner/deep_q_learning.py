@@ -35,15 +35,16 @@ class DeepQLearning:
         self.eps_scheduler_rate = eps_scheduler_rate
         self.q_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
         self.q_target_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
-        self.replay_memory = deque(maxlen=100_000)
+        self.replay_memory = deque(maxlen=400_000)
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-        self.loss_function = tf.keras.losses.Huber()
+        # self.loss_function = tf.keras.losses.Huber()
+        self.loss_function = tf.keras.losses.MeanSquaredError()
 
         self.episode_nr = 0
         self.accumulated_steps = 0
 
     def generate_q_model(self, N_hidden_layer=1, layer_size=24,
-                         initializer=tf.keras.initializers.Zeros()):
+                         initializer=tf.keras.initializers.he_uniform()):
         """
         generate_q_model Generate the Neural Network approximating the Q function
 
@@ -94,7 +95,7 @@ class DeepQLearning:
         """
         #return 1/(self.eps_scheduler_rate * self.episode_nr + 1) + 0.01
         initial_p = 1.0
-        final_p = 0.02
+        final_p = 0.001
         fraction = min(float(self.episode_nr) / self.eps_scheduler_rate, 1.0)
         return initial_p + fraction * (final_p - initial_p)
 
@@ -162,10 +163,10 @@ class DeepQLearning:
             total_training_rewards += next_step[2]
             done = next_step[4]
 
-            if not (self.accumulated_steps % 5):
+            if not (self.accumulated_steps % 50):
                 self.train(self.batch_size)
 
-            if not(self.accumulated_steps % 200):
+            if not(self.accumulated_steps % 400):
                 self.q_target_model.set_weights(self.q_model.get_weights())
 
             ts += self.env.time_step

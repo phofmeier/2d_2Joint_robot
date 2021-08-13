@@ -82,10 +82,10 @@ def learn(q):
     input_trajectory.resample()
     reference = input_trajectory.getMetricDataArray()[:, 1:]
     env = Environment(reference)
-    learner = DeepQLearning(env, learning_rate=0.00025, discount_factor=0.9999,
-                            N_hidden_layer=5, layer_size=128, eps_scheduler_rate=400, batch_size=256)
+    learner = DeepQLearning(env, learning_rate=0.0001, discount_factor=0.999999,
+                            N_hidden_layer=4, layer_size=64, eps_scheduler_rate=400, batch_size=256)
 
-    for i in range(1000):
+    for i in range(2000):
         out_trajectory, reward = learner.runEpisode(canvas_width, canvas_height)
         print("Episode:", i, "Reward:", reward)
         if q.full():
