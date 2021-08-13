@@ -60,6 +60,7 @@ function update_figure() {
             }
         }],
         autosize: false,
+        hovermode:'closest',
         width: 1200,
         height: 600,
       };
@@ -68,6 +69,12 @@ function update_figure() {
         x: steps,
         y: rewards
     }], layout);
+
+    reward_plot.on('plotly_click', function(data){
+        slider = document.getElementById("step_slider");
+        slider.value = data.points[0].x;
+        SliderChanged(slider.value)
+    });
 
 }
 
