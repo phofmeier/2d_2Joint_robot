@@ -5,6 +5,7 @@ from trajectory_planner.trajectoryPlanner import TrajectoryPlanner
 from trajectory_planner.environment import Environment
 from trajectory_planner.deep_q_learning import DeepQLearning
 from multiprocessing import Process, Queue
+import time
 
 port = 5000
 host = '127.0.0.1'
@@ -79,11 +80,12 @@ def start_learning_callback():
 
 
 def learn(q):
+    path = "trained_model/" + time.strftime("%Y%m%d-%H%M%S") + "/Episode_"
     input_trajectory.resample()
     reference = input_trajectory.getMetricDataArray()[:, 1:]
     env = Environment(reference)
-    learner = DeepQLearning(env, learning_rate=0.0001, discount_factor=0.999999,
-                            N_hidden_layer=4, layer_size=64, eps_scheduler_rate=400, batch_size=256)
+    learner = DeepQLearning(env, learning_rate=0.0002, discount_factor=0.99999999999999999,
+                            N_hidden_layer=5, layer_size=64, eps_scheduler_rate=700, batch_size=2048)
 
     for i in range(2000):
         out_trajectory, reward = learner.runEpisode(canvas_width, canvas_height)
@@ -91,10 +93,13 @@ def learn(q):
         if q.full():
             q.get()
         q.put([out_trajectory, reward, i])
+        if (i%100) == 0:
+            learner.save_model(path + str(i))
+
 
 
 def main():
-    socketio.run(app, port=port, host=host, debug=True)
+    socketio.run(app, port=port, host=host, debug=False)
 
 
 if __name__ == "__main__":

@@ -95,7 +95,12 @@ class Environment:
         """
         pos_state = self.model.calcPos2_np(state[0], state[2])
         diff = reference - pos_state.flatten()
-        return -np.dot(diff, diff) - 1e-6 * np.dot(action, action)
+        error = np.dot(diff, diff)
+
+        if self.currentStep >= len(self.reference):
+            error = error * 1e3
+
+        return -error - 1e-6 * np.dot(action, action)
 
     def getCurrentEnvState(self):
         """
@@ -103,10 +108,16 @@ class Environment:
 
         :return: environment state
         """
-        if self.done:
-            return np.concatenate((self.currentModelState, [0, 0]))
+        
         pos_state = self.model.calcPos2_np(self.currentModelState[0], self.currentModelState[2]).flatten()
-        e_x = self.reference[self.currentStep][0] - pos_state[0]
-        e_y = self.reference[self.currentStep][1] - pos_state[1]
+        if self.done:
+            x_ref = self.reference[self.currentStep - 1][0]
+            y_ref = self.reference[self.currentStep - 1][1]
 
-        return np.concatenate((self.currentModelState, [e_x, e_y]))
+        else:
+            x_ref = self.reference[self.currentStep][0]
+            y_ref = self.reference[self.currentStep][1]
+
+        x_cur = pos_state[0]
+        y_cur = pos_state[1]
+        return np.concatenate((self.currentModelState, [x_cur, y_cur ,x_ref, y_ref]))

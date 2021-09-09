@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-install_requirements = ["Flask", "numpy", "casadi", "pandas", "tensorflow", "python-socketio"]
+install_requirements = ["Flask", "numpy", "casadi", "pandas", "tensorflow", "python-socketio", "flask-socketio", "scipy"]
 
 setup(name="robot-animation",
       setup_requires=['setuptools_scm', 'setuptools', 'wheel'],

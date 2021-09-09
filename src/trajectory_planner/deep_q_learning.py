@@ -1,3 +1,4 @@
+import itertools
 from trajectory_planner.trajectoryData import StateTrajectory
 from trajectory_planner.environment import Environment
 import tensorflow as tf
@@ -35,7 +36,7 @@ class DeepQLearning:
         self.eps_scheduler_rate = eps_scheduler_rate
         self.q_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
         self.q_target_model = self.generate_q_model(self.N_hidden_layer, self.layer_size)
-        self.replay_memory = deque(maxlen=400_000)
+        self.replay_memory = deque(maxlen=800_000)
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         # self.loss_function = tf.keras.losses.Huber()
         self.loss_function = tf.keras.losses.MeanSquaredError()
@@ -44,7 +45,7 @@ class DeepQLearning:
         self.accumulated_steps = 0
 
     def generate_q_model(self, N_hidden_layer=1, layer_size=24,
-                         initializer=tf.keras.initializers.he_uniform()):
+                         initializer=tf.keras.initializers.zeros()):
         """
         generate_q_model Generate the Neural Network approximating the Q function
 
@@ -65,6 +66,13 @@ class DeepQLearning:
         model.add(tf.keras.layers.Dense(self.env.action_size,
                   activation='linear', kernel_initializer=initializer))
         return model
+
+    def save_model(self, path: str):
+        self.q_model.save(path)
+
+    def load_model(self, path: str):
+        self.q_model = tf.keras.models.load_model(path)
+        self.q_target_model = tf.keras.models.load_model(path)
 
     def eps_greedy(self, eps, state):
         """
@@ -163,10 +171,10 @@ class DeepQLearning:
             total_training_rewards += next_step[2]
             done = next_step[4]
 
-            if not (self.accumulated_steps % 50):
+            if not (self.accumulated_steps % 10):
                 self.train(self.batch_size)
 
-            if not(self.accumulated_steps % 400):
+            if not(self.accumulated_steps % 200):
                 self.q_target_model.set_weights(self.q_model.get_weights())
 
             ts += self.env.time_step
