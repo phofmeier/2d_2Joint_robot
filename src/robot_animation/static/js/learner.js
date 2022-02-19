@@ -14,7 +14,7 @@ function init() {
         slider.max = reward_input[0];
     });
     update_figure();
-    timer();
+    window.setInterval(function(){ socket.emit("timer"); }, 1000)
 
 }
 
@@ -28,11 +28,6 @@ function animate_k() {
     window.animation_index = 0;
 }
 
-
-function timer() {
-    socket.emit("timer");
-    window.setTimeout(timer, timeout);
-}
 
 function update_figure() {
     slider = document.getElementById("step_slider")

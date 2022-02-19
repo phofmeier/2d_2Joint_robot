@@ -36,7 +36,7 @@ def timer_callback():
         value = q.get(block=False)
         output_trajectory = value[0]
         learned_trajectories.append(value)
-        socketio.emit("new_learned_reward", [value[2], -value[1]])
+        socketio.emit("new_learned_reward", [value[2], value[1]])
 
 
 
@@ -84,8 +84,11 @@ def learn(q):
     input_trajectory.resample()
     reference = input_trajectory.getMetricDataArray()[:, 1:]
     env = Environment(reference)
-    learner = DeepQLearning(env, learning_rate=0.0002, discount_factor=0.99999999999999999,
-                            N_hidden_layer=5, layer_size=64, eps_scheduler_rate=700, batch_size=2048)
+    # TODO mit weniger actions, laengerer reference, nur reference und nicht den fehler
+    learner = DeepQLearning(env, learning_rate=0.001, discount_factor=0.999,
+                            N_hidden_layer=4, layer_size=64, eps_scheduler_rate=200, batch_size=512)
+    learner.generate_random_data(20)
+    learner.fit_normalizer()
 
     for i in range(2000):
         out_trajectory, reward = learner.runEpisode(canvas_width, canvas_height)

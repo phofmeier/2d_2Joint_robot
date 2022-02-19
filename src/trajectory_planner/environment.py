@@ -97,10 +97,15 @@ class Environment:
         diff = reference - pos_state.flatten()
         error = np.dot(diff, diff)
 
-        if self.currentStep >= len(self.reference):
-            error = error * 1e3
+        # if self.currentStep >= len(self.reference):
+        #     error = error * 1e3
+        c = 1/ len(self.reference)
+        # mu = 0.01
+        # w = np.arctanh(np.sqrt(0.95)) / mu
+        # cost = np.tanh(np.abs(error) * w) ** 2 * c        
 
-        return -error - 1e-6 * np.dot(action, action)
+        return c * (error + 1e-6 * np.dot(action, action))
+        # return cost
 
     def getCurrentEnvState(self):
         """
@@ -110,14 +115,36 @@ class Environment:
         """
         
         pos_state = self.model.calcPos2_np(self.currentModelState[0], self.currentModelState[2]).flatten()
+        # if self.done:
+        #     x_ref = self.reference[self.currentStep - 1][0]
+        #     y_ref = self.reference[self.currentStep - 1][1]
+
+        # else:
+        #     x_ref = self.reference[self.currentStep][0]
+        #     y_ref = self.reference[self.currentStep][1]
+
+        # x_cur = pos_state[0]
+        # y_cur = pos_state[1]
+        # return np.concatenate((self.currentModelState, [x_cur, y_cur ,x_ref, y_ref]))
+
+        nr_ref_states = 40
         if self.done:
-            x_ref = self.reference[self.currentStep - 1][0]
-            y_ref = self.reference[self.currentStep - 1][1]
+            x_ref = self.reference[self.currentStep - 1 :][:,0]
+            y_ref = self.reference[self.currentStep - 1 :][:,1]
 
         else:
-            x_ref = self.reference[self.currentStep][0]
-            y_ref = self.reference[self.currentStep][1]
+            x_ref = self.reference[self.currentStep :][:,0]
+            y_ref = self.reference[self.currentStep :][:,1]
 
-        x_cur = pos_state[0]
-        y_cur = pos_state[1]
-        return np.concatenate((self.currentModelState, [x_cur, y_cur ,x_ref, y_ref]))
+        
+        if (len(x_ref) >= nr_ref_states):
+            x_ref = x_ref[:nr_ref_states]
+            y_ref = y_ref[:nr_ref_states]
+        else :
+            x_ref = np.concatenate((x_ref, np.ones(nr_ref_states-len(x_ref)) * x_ref[-1]))
+            y_ref = np.concatenate((y_ref, np.ones(nr_ref_states-len(y_ref)) * y_ref[-1]))
+
+
+        x_err = pos_state[0] - x_ref
+        y_err = pos_state[1] - y_ref
+        return np.concatenate((self.currentModelState,pos_state, x_ref, y_ref)).flatten()
